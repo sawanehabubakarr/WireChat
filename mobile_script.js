@@ -107,3 +107,73 @@ function filterChats() {
         }
     });
 }
+
+
+// Chat Input (with Photo Upload)
+const SendButton = document.querySelector('.chatbox_input ion-icon[name="send-outline"]');
+const MessageInput = document.querySelector('.chatbox_input input');
+const ChatBox = document.querySelector('.chatBox');
+const cameraIcon = document.querySelector('.chatbox_input ion-icon[name="camera-outline"]');
+const fileInput = document.getElementById('fileInput');
+
+SendButton.addEventListener('click', sendMessage);
+MessageInput.addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        sendMessage();
+    }
+});
+
+cameraIcon.addEventListener('click', () => {
+    fileInput.click(); // Trigger click event on file input when camera icon is clicked
+});
+
+// Handle file selection
+fileInput.addEventListener('change', handleFileSelect);
+
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        // Add the selected image to the chat conversation
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const imageSrc = e.target.result;
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', 'my_message');
+            messageElement.innerHTML = `<img src="${imageSrc}" alt="Uploaded Image"><br><span>${getCurrentTime()}</span>`;
+            chatBox.appendChild(messageElement);
+
+            // Clear the file input
+            fileInput.value = '';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function sendMessage() {
+    const messageText = messageInput.value.trim();
+    const file = fileInput.files[0]; // Get the selected file (if any)
+
+    if (messageText !== '' || file) {
+        // Check if there's either a message text or a file selected
+        if (file) {
+            // If a file is selected, handle it as an image upload
+            handleFileSelect({ target: { files: [file] } }); // Call the function to handle the file
+        } else {
+            // If there's only a message text, add it to the chat conversation
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', 'my_message');
+            messageElement.innerHTML = `<p>${messageText}<br><span>${getCurrentTime()}</span></p>`;
+            chatBox.appendChild(messageElement);
+        }
+
+        // Clear the input fields
+        messageInput.value = '';
+        fileInput.value = '';
+    }
+}
+
+
+function getCurrentTime() {
+    const now = new Date();
+    return now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
+}
